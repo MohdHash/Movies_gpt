@@ -2,11 +2,13 @@ import React, { useRef, useState } from 'react'
 import { checkLogin } from '../utils/validate';
 import { createUserWithEmailAndPassword , signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../utils/firebase';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
 
     const [isSignIn , setIsSignIn] = useState(true);
     const [errorMsg , setErrorMsg] = useState("");
+    const navigate = useNavigate();
     const fullName = useRef(null);
     const email = useRef(null);
     const password = useRef(null);
@@ -35,6 +37,7 @@ const Login = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
+                navigate("/browse");
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -48,6 +51,7 @@ const Login = () => {
                 // Signed in 
                 const user = userCredential.user;
                 console.log(user);
+                navigate("/browse");
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -75,6 +79,7 @@ const Login = () => {
             <p onClick={handleSignIn} className=' my-4 cursor-pointer hover:underline '> {isSignIn ? "New user ? Sign Up" : "Already a user ? Sign In"}</p>
         </form>
     </div>
+    
   )
 }
 
