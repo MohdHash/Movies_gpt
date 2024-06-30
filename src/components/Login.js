@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { checkLogin } from '../utils/validate';
+import { createUserWithEmailAndPassword , signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../utils/firebase';
 
 const Login = () => {
 
@@ -24,8 +26,34 @@ const Login = () => {
         
         if(message){
             setErrorMsg(message);
+            return;
+        }
+
+        if(!isSignIn){
+            //signup 
+            createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                console.log(user);
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                setErrorMsg(errorCode + ": " + errorMessage);
+            });
         }else{
-            setErrorMsg("");
+            //signup
+            signInWithEmailAndPassword(auth,  email.current.value, password.current.value)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                console.log(user);
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                setErrorMsg(errorCode + ": " + errorMessage);
+            });
         }
 
     }
@@ -38,8 +66,8 @@ const Login = () => {
         </div>
         <form onSubmit={(e)=> e.preventDefault()} className='absolute bg-black w-3/12 h-auto p-12 my-36 mx-auto right-0 left-0 text-white opacity-80 rounded-lg'>
             <h1 className=' my-2 font-bold text-3xl'>{isSignIn ? "Sign In" : "Sign Up"}</h1>
-            {!isSignIn  && <input ref={fullName} className='p-2 my-4 w-full' type='text' placeholder="Name"></input>}
-            {!isSignIn  && <input className='p-2 my-4 w-full' type='number' placeholder="Phone Number"></input>}
+            {!isSignIn  && <input ref={fullName} className='p-2 my-4 w-full text-black' type='text' placeholder="Name"></input>}
+            {!isSignIn  && <input className='p-2 my-4 w-full text-black' type='tel' placeholder="Phone Number"></input>}
             <input ref={email}  className="p-2 my-4 w-full text-black" type='email' placeholder='Email Address'></input>
             <input ref={password} className='p-2 my-4 w-full text-black' type='password' placeholder='Password'></input>
             <p className='my-4 font-bold text-lg  text-red-600'>{errorMsg}</p>
