@@ -1,14 +1,18 @@
 import React, { useRef, useState } from 'react'
 import { checkLogin } from '../utils/validate';
-import { createUserWithEmailAndPassword , signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword , signInWithEmailAndPassword , updateProfile} from 'firebase/auth';
 import { auth } from '../utils/firebase';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addUser } from '../utils/ReduxStore/userSlice';
 
 const Login = () => {
 
     const [isSignIn , setIsSignIn] = useState(true);
     const [errorMsg , setErrorMsg] = useState("");
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
     const fullName = useRef(null);
     const email = useRef(null);
     const password = useRef(null);
@@ -37,7 +41,19 @@ const Login = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
-                navigate("/browse");
+                updateProfile(auth.currentUser, {
+                    displayName: fullName.current.value, photoURL: "https://media.licdn.com/dms/image/D5603AQGbpl6QUnxCDw/profile-displayphoto-shrink_400_400/0/1719759291386?e=1725494400&v=beta&t=PDpwW24SGhUPs8RpTIFBouO0Z0j-0BpYE81P-yVev7c"
+                  }).then(() => {
+                    // Profile updated! 
+                    const {uid , email , displayName, photoURL} =auth.currentUser;
+                    dispatch(addUser({uid:uid, email:email, displayName:displayName , photoURL:photoURL}));
+                    navigate("/browse");
+                    // ...
+                  }).catch((error) => {
+                    // An error occurred
+                    // ...
+                    setErrorMsg(error.message);
+                  });
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -45,13 +61,15 @@ const Login = () => {
                 setErrorMsg(errorCode + ": " + errorMessage);
             });
         }else{
-            //signup
+            //signin 
             signInWithEmailAndPassword(auth,  email.current.value, password.current.value)
             .then((userCredential) => {
                 // Signed in 
                 const user = userCredential.user;
-                console.log(user);
+                const {uid , email , displayName, photoURL} =auth.currentUser;
+                dispatch(addUser({uid:uid, email:email, displayName:displayName , photoURL:photoURL}));
                 navigate("/browse");
+                console.log(user);
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -79,7 +97,7 @@ const Login = () => {
             <p onClick={handleSignIn} className=' my-4 cursor-pointer hover:underline '> {isSignIn ? "New user ? Sign Up" : "Already a user ? Sign In"}</p>
         </form>
     </div>
-    
+
   )
 }
 
